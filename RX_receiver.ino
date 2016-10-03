@@ -1,19 +1,11 @@
-
+#include <avr/wdt.h>
 #include "os.h"
 #include "communication.h"
 #include "profiler.h"
 #include "RX.h"
 #define main_serial Serial
 
-#define RX_PIN_CHECK(pin_pos, rc_value_pos)                        \
-    if (mask & RX::PCInt_RX_Pins[pin_pos]) {                             \
-      if (!(pin & RX::PCInt_RX_Pins[pin_pos])) {                         \
-        dTime = cTime-edgeTime[pin_pos];                             \
-        if (900<dTime && dTime<2200) {                               \
-          RX::rcValue[rc_value_pos] = dTime;                             \
-																								        }                                                            \
-	  	  	  	  	  	  	  	  	  	  	  	        } else edgeTime[pin_pos] = cTime;                              \
-												    }
+#define RX_PIN_CHECK(pin_pos, rc_value_pos)    if (mask & RX::PCInt_RX_Pins[pin_pos]) {  if (!(pin & RX::PCInt_RX_Pins[pin_pos])) { dTime = cTime-edgeTime[pin_pos];   if (900<dTime && dTime<2200) {        RX::rcValue[rc_value_pos] = dTime;}    } else edgeTime[pin_pos] = cTime;  }
 
 ISR(RX_PC_INTERRUPT) { //this ISR is common to every receiver channel, it is call everytime a change state occurs on a RX input pin
 	uint8_t mask;
@@ -36,32 +28,24 @@ ISR(RX_PC_INTERRUPT) { //this ISR is common to every receiver channel, it is cal
 	RX_PIN_CHECK(6, 1);
 	RX_PIN_CHECK(7, 3);
 }
-
+os main_os;
 void setup()
 {
+	MCUSR = 0;
+	wdt_disable();
+	interrupts();
 	main_serial.begin(115200);
-
+	delay(100);
 	//main_os.boot();
 	/* add setup code here */
-	uint8_t serial_rec, switch_lock = 1;
-	while (switch_lock == 1){
-		if (main_serial.available() > 0) {
-			// read the incoming byte:
-			serial_rec = main_serial.read();
-			if (serial_rec == 71){		//Corresponds to 'G'
-				switch_lock = 0;
-			}
-		}
-	}
-	interrupts();
+	main_os.boot();
 }
 
 void loop()
 {
 
 	while (1){
-		//main_os.perform_loop();
-
+		main_os.perform_loop();
 	}
 	/* add main program code here */
 

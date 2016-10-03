@@ -6,7 +6,7 @@
 #include "profiler.h"
 #include "communication.h"
 #define dt_manual 0.1f
-#define fake_progress
+#undef fake_progress
 #if defined(ARDUINO) && ARDUINO >= 100
 #include "arduino.h"
 #else
@@ -21,7 +21,8 @@
 
 
 class os{
-	enum cmd_type { start, set_test_plan, calibrate_sensors, request_heart_beat, controller_select, update_EEPROM };
+	enum ctrl_channel { roll, pitch, yaw, z_axis, x_axis, y_axis, last_channel = y_axis };
+	enum cmd_type  { arm, disarm, update_ref_src, sw_change, mrft_select, calibrate_sensors, request_heart_beat, update_EEPROM, get_bias, engage_motors, disengage_motors };
 	static communication comm_channel;
 	static profiler main_profiler;
 	enum startup_state {
@@ -42,7 +43,7 @@ public:
 	enum ctrl_channel { roll, pitch, yaw, z_axis, x_axis, y_axis, last_channel = y_axis };
 	startup_state run_startup_process();
 	bool boot();
-	static void issue_command(uint8_t, uint8_t);
+	static void issue_command(uint8_t, uint8_t,uint8_t);
 	void perform_loop();
 };
 
